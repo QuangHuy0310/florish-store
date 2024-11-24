@@ -54,6 +54,13 @@
       "@dtos": [
         "src/dtos"
       ],
+
+      "@upload/*": [
+        "upload/*"
+      ],
+      "@upload": [
+        "upload"
+      ],
     }
   },
   "include": [

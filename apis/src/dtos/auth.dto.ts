@@ -16,9 +16,11 @@ export class RegisterDto {
   @ApiProperty({
     example: USER_ROLE.ADMIN,
     enum: USER_ROLE,
+    default: USER_ROLE.USER,
   })
   @IsEnum(USER_ROLE)
+
   role: USER_ROLE;
 }
 
-export class LoginDto extends OmitType(RegisterDto, ['role']) {}
+export class LoginDto extends OmitType(RegisterDto, ['role']) { }

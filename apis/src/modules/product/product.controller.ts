@@ -45,7 +45,7 @@ export class ProductController {
 
     }
 
-
+    @Public()
     @Get('/:id')
     async getOne(@Param('id') id: string) {
         return await this.productService.getOne(id)
