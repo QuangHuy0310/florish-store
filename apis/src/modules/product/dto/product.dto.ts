@@ -28,13 +28,14 @@ export class productDTO {
   img: string;
 
   @ApiPropertyOptional({
+    type: Number, 
     example: 0,
   })
-  @IsNumber()
   @Optional()
   quantities: number;
 
   @ApiPropertyOptional({
+    type: Number,
     example: 0,
   })
   @IsNumber()
@@ -42,8 +43,8 @@ export class productDTO {
 
   @ApiPropertyOptional({
     example: 0,
+    type: Number 
   })
-  @IsNumber()
   @Optional()
   hot: number;
 }
