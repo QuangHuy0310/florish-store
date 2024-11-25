@@ -31,6 +31,7 @@ export class productDTO {
     example: 0,
   })
   @IsNumber()
+  @Optional()
   quantities: number;
 
   @ApiPropertyOptional({
@@ -43,6 +44,7 @@ export class productDTO {
     example: 0,
   })
   @IsNumber()
+  @Optional()
   hot: number;
 }
 

@@ -102,5 +102,7 @@ export class ProductService {
         return { items, totalPages };
     }
 
+    // async report()
+
 
 }
