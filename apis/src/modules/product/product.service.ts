@@ -59,7 +59,7 @@ export class ProductService {
     }
 
     async create(payload: any): Promise<any> {
-
+        payload.hot = 0
         return new this.productModel(payload).save();
     }
 
