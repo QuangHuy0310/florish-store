@@ -9,7 +9,7 @@ import mongoose from 'mongoose';
     changeStreamPreAndPostImages: { enabled: true },
   },
 })
-export class product extends BaseEntity{
+export class Product extends BaseEntity{
   @Prop({
     type: String,
   })
@@ -48,7 +48,7 @@ export class product extends BaseEntity{
 
 }
 
-export const productSchema = SchemaFactory.createForClass(product);
-export type productDocument = product & Document;
+export const productSchema = SchemaFactory.createForClass(Product);
+export type productDocument = Product & Document;
 
 

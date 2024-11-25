@@ -1,4 +1,4 @@
-import { order, orderDocument } from '@entities/order.entities';
+import { Order, orderDocument } from '@entities/order.entities';
 import { forwardRef, HttpException, HttpStatus, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -12,13 +12,89 @@ export class OrderService {
         @Inject(forwardRef(() => ProductService))
         private readonly productService: ProductService,
 
-        @InjectModel(order.name)
+        @InjectModel(Order.name)
         private orderModel: Model<orderDocument>,
     ) { }
-    async getAll(id: any) {
-        const getID = id.sub
-        return this.orderModel.find({ deletedAt: null, userID: getID })
+
+    async getAll(user: any) {
+        const getID = user.sub;
+        const getRole = user.role;
+    
+        // Xây dựng query cơ bản dựa trên quyền
+        const matchCondition = {
+            deletedAt: null,
+            ...(getRole === 'user' ? { userID: getID } : {}),
+        };
+    
+        const orders = await this.orderModel.aggregate([
+            { $match: matchCondition }, 
+            {
+                $unwind: '$productID', 
+            },
+            {
+                $group: {
+                    _id: { orderId: '$_id', productID: '$productID' },
+                    quantity: { $sum: 1 }, 
+                },
+            },
+            {
+                $lookup: {
+                    from: 'products', 
+                    localField: '_id.productID',
+                    foreignField: '_id', 
+                    as: 'productDetails', 
+                },
+            },
+            {
+                $unwind: '$productDetails',
+            },
+            {
+                $group: {
+                    _id: '$_id.orderId',
+                    products: {
+                        $push: {
+                            product: '$productDetails',
+                            quantity: '$quantity',
+                        },
+                    },
+                    totalQuantity: { $sum: '$quantity' }, 
+                },
+            },
+            {
+                $lookup: {
+                    from: 'orders', 
+                    localField: '_id',
+                    foreignField: '_id',
+                    as: 'orderDetails',
+                },
+            },
+            {
+                $unwind: '$orderDetails',
+            },
+            {
+                $project: {
+                    _id: 1,
+                    userID: '$orderDetails.userID',
+                    total: '$orderDetails.total',
+                    status: '$orderDetails.status',
+                    createdAt: '$orderDetails.createdAt',
+                    updatedAt: '$orderDetails.updatedAt',
+                    address: '$orderDetails.address',
+                    productDetails: '$products', 
+                    totalQuantity: 1, 
+                },
+            },
+        ]);
+    
+        if (!orders.length && getRole !== 'admin') {
+            throw new HttpException(USER_ERRORS.WRONG_ROLE, HttpStatus.NOT_FOUND);
+        }
+    
+        return orders;
     }
+    
+    
+    
 
     async getOne(id: string): Promise<any> {
         return this.orderModel.findById(id).where({ deletedAt: null })

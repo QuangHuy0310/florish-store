@@ -6,13 +6,13 @@ https://docs.nestjs.com/modules
 
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { category, categorySchema } from '@entities/category.entities';
+import { Category, categorySchema } from '@entities/category.entities';
 
 @Module({
     imports: [
         MongooseModule.forFeature([
             {
-              name: category.name,
+              name: Category.name,
               schema: categorySchema,
             },
           ]),

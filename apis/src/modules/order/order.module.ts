@@ -6,7 +6,7 @@ https://docs.nestjs.com/modules
 */
 
 import { forwardRef, Module } from '@nestjs/common';
-import { order, orderSchema } from '@entities/order.entities';
+import { Order, orderSchema } from '@entities/order.entities';
 import { ProductModule } from '@modules/product/product.module';
 
 @Module({
@@ -14,7 +14,7 @@ import { ProductModule } from '@modules/product/product.module';
     forwardRef(() => ProductModule),
     MongooseModule.forFeature([
       {
-        name: order.name,
+        name: Order.name,
         schema: orderSchema,
       },
     ]),

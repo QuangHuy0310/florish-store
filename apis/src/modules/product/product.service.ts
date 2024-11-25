@@ -1,4 +1,4 @@
-import { product, productDocument } from '@entities/product.entities';
+import { Product, productDocument } from '@entities/product.entities';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -8,7 +8,7 @@ import { USER_ERRORS } from '@utils/data-types/constants';
 @Injectable()
 export class ProductService {
     constructor(
-        @InjectModel(product.name)
+        @InjectModel(Product.name)
         private productModel: Model<productDocument>,
     ) { }
 
@@ -16,43 +16,45 @@ export class ProductService {
         page = 1,
         limit = 10,
         payload: productFilterDTO,
-        hot: boolean = false
+        hot: boolean = false,
     ): Promise<{ items: productDTO[]; totalPages: number }> {
         if (page <= 0 || limit <= 0) {
             throw new HttpException(USER_ERRORS.WRONG_PAGE, HttpStatus.BAD_REQUEST);
         }
-
+    
         const skip = (page - 1) * limit;
-
+    
         const query: any = { deletedAt: null };
-        let arrg: any = { createdAt: -1 }
-
-        if (payload?.name && payload.name.trim() !== '') {
+        const sortOrder: any = { createdAt: -1 };
+    
+        if (payload?.name?.trim()) {
             query.name = { $regex: payload.name.trim(), $options: 'i' };
         }
-
-        if (payload?.category && payload.category.trim() !== '') {
-            query.category = { $regex: payload.category.trim(), $options: 'i' };
+    
+        // Lọc nhiều category nếu có
+        if (payload?.category?.length > 0) {
+            query.category = { $in: payload.category };
         }
-
-        if(hot){
-            arrg =  {hot: -1,...arrg}
+    
+        if (hot) {
+            sortOrder.hot = -1;
         }
-        console.log(arrg)
+    
         const [items, totalItems] = await Promise.all([
             this.productModel
                 .find(query)
-                .sort(arrg)
+                .sort(sortOrder)
                 .skip(skip)
                 .limit(limit)
                 .exec(),
             this.productModel.countDocuments(query),
         ]);
-
+    
         const totalPages = Math.ceil(totalItems / limit);
-
+    
         return { items, totalPages };
     }
+    
 
     async getOne(id: string): Promise<any> {
         return this.productModel.findById(id).where({ deletedAt: null })

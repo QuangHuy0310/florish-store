@@ -4,6 +4,7 @@ export const UPLOAD_ERRORS = {
 };
 
 export const USER_ERRORS = {
+  WRONG_ROLE: 'role not exist',
   WRONG_PAGE:'wrong page',
   USER_ID_MISSED: 'user id missed',
   NOT_FOUND: 'user not found',

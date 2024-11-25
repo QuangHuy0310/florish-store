@@ -1,4 +1,4 @@
-import { category, categoryDocument } from '@entities/category.entities';
+import { Category, categoryDocument } from '@entities/category.entities';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -6,7 +6,7 @@ import { Model } from 'mongoose';
 @Injectable()
 export class CategoryService { 
     constructor(
-        @InjectModel(category.name)
+        @InjectModel(Category.name)
         private categoryModel: Model<categoryDocument>,
     ){}
 

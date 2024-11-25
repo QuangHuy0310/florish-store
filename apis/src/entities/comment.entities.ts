@@ -9,11 +9,11 @@ import mongoose from 'mongoose';
     changeStreamPreAndPostImages: { enabled: true },
   },
 })
-export class Order extends BaseEntity{
+export class Comment  extends BaseEntity{
   @Prop({
-    type: [String],
+    type: String,
   })
-  productID: string[];
+  productID: string;
 
   @Prop({
     type: String,
@@ -23,22 +23,11 @@ export class Order extends BaseEntity{
   @Prop({
     type: String,
   })
-  address: string;
+  message: string;
 
-  @Prop({
-    type: Number,
-  })
-  total: number;
-
-  @Prop({
-    type: String,
-    default: 'pending',
-    enum: ['pending', 'completed', 'cancelled']
-  })
-  status: string;
 }
 
-export const orderSchema = SchemaFactory.createForClass(Order);
-export type orderDocument = Order & Document;
+export const commentSchema = SchemaFactory.createForClass(Comment );
+export type commentDocument = Comment  & Document;
 
 

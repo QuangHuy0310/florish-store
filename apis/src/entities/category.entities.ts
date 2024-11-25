@@ -9,14 +9,14 @@ import mongoose from 'mongoose';
     changeStreamPreAndPostImages: { enabled: true },
   },
 })
-export class category extends BaseEntity{
+export class Category extends BaseEntity{
   @Prop({
     type: String,
   })
   name: string;
 }
 
-export const categorySchema = SchemaFactory.createForClass(category);
-export type categoryDocument = category & Document;
+export const categorySchema = SchemaFactory.createForClass(Category);
+export type categoryDocument = Category & Document;
 
 
