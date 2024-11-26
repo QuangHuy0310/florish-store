@@ -46,7 +46,7 @@ export class CommentService {
     async create(productID: string, userID:any, payload: any): Promise<any> {
         const isCheck = await this.validProduct(productID)
         payload.productID = isCheck
-        payload.userID = userID.sub
+        payload.userID = userID.email
         return new this.commentModel(payload).save();
     }
 
