@@ -19,30 +19,30 @@ export class OrderService {
     async getAll(user: any) {
         const getID = user.sub;
         const getRole = user.role;
-    
+
         // Xây dựng query cơ bản dựa trên quyền
         const matchCondition = {
             deletedAt: null,
             ...(getRole === 'user' ? { userID: getID } : {}),
         };
-    
+
         const orders = await this.orderModel.aggregate([
-            { $match: matchCondition }, 
+            { $match: matchCondition },
             {
-                $unwind: '$productID', 
+                $unwind: '$productID',
             },
             {
                 $group: {
                     _id: { orderId: '$_id', productID: '$productID' },
-                    quantity: { $sum: 1 }, 
+                    quantity: { $sum: 1 },
                 },
             },
             {
                 $lookup: {
-                    from: 'products', 
+                    from: 'products',
                     localField: '_id.productID',
-                    foreignField: '_id', 
-                    as: 'productDetails', 
+                    foreignField: '_id',
+                    as: 'productDetails',
                 },
             },
             {
@@ -57,12 +57,12 @@ export class OrderService {
                             quantity: '$quantity',
                         },
                     },
-                    totalQuantity: { $sum: '$quantity' }, 
+                    totalQuantity: { $sum: '$quantity' },
                 },
             },
             {
                 $lookup: {
-                    from: 'orders', 
+                    from: 'orders',
                     localField: '_id',
                     foreignField: '_id',
                     as: 'orderDetails',
@@ -80,21 +80,21 @@ export class OrderService {
                     createdAt: '$orderDetails.createdAt',
                     updatedAt: '$orderDetails.updatedAt',
                     address: '$orderDetails.address',
-                    productDetails: '$products', 
-                    totalQuantity: 1, 
+                    productDetails: '$products',
+                    totalQuantity: 1,
                 },
             },
         ]);
-    
+
         if (!orders.length && getRole !== 'admin') {
             throw new HttpException(USER_ERRORS.WRONG_ROLE, HttpStatus.NOT_FOUND);
         }
-    
+
         return orders;
     }
-    
-    
-    
+
+
+
 
     async getOne(id: string): Promise<any> {
         return this.orderModel.findById(id).where({ deletedAt: null })
@@ -113,7 +113,7 @@ export class OrderService {
         const ID = user.sub;
 
         const [isCheck, product] = await Promise.all([
-            this.orderModel.findOne({ userID: ID, status: 'pending', deletedAt: null }),
+            this.orderModel.findOne({ userID: ID, status: null, deletedAt: null }),
             this.getProduct(productID)
         ])
         const price: number = product.price
@@ -123,7 +123,7 @@ export class OrderService {
         const newOrder = {
             userID: ID,
             productID: [productID],
-            status: 'pending',
+            status: null,
             total: price
         }
         await this.create(newOrder)
@@ -179,6 +179,11 @@ export class OrderService {
             throw new HttpException('Sai thông tin', HttpStatus.NOT_FOUND);
         }
         await this.orderModel.findByIdAndUpdate(id, payload)
+        return "Success"
+    }
+
+    async updateStatus(id: string): Promise<any> {
+        await this.orderModel.findByIdAndUpdate(id,{"status":"pending"})
         return "Success"
     }
 

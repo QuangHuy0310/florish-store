@@ -65,4 +65,10 @@ export class OrderController {
     async updateAddress(@Param('id') id: string, @Body() payload: AddressDTO, @Request() { user }: AuthorizationRequest) {
         return await this.orderService.updateAddress(id, payload, user)
     }
+
+    @RequiredByUserRoles(USER_ROLE.USER)
+    @Put('status/:id')
+    async updateStatus(@Param('id') id: string) {
+        return await this.orderService.updateStatus(id)
+    }
 }
