@@ -30,11 +30,18 @@ export class OrderController {
         return await this.orderService.addToCart(user, productID)
     }
 
-    @RequiredByUserRoles(USER_ROLE.ADMIN)
+    @RequiredByUserRoles(USER_ROLE.ADMIN,USER_ROLE.USER)
     @ApiQuery({ name: 'productID', required: false, type: String })
     @Delete('/dele-from-cart')
     async removeProductFromCart(@Request() { user }: AuthorizationRequest, @Query('productID') productID: string) {
         return await this.orderService.removeFromCart(user, productID)
+    }
+
+    @RequiredByUserRoles(USER_ROLE.ADMIN,USER_ROLE.USER)
+    @ApiQuery({ name: 'productID', required: false, type: String })
+    @Delete('/dele-from-cart-ALL')
+    async removeAll(@Request() { user }: AuthorizationRequest, @Query('productID') productID: string) {
+        return await this.orderService.removeProductFromCart(user, productID)
     }
 
     @RequiredByUserRoles(USER_ROLE.ADMIN)

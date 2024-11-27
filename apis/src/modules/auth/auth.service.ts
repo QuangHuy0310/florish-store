@@ -83,7 +83,7 @@ export class AuthService {
     }
   
     const payload = { email: user.email, sub: user.id, role: user.role };
-    const accessToken = this.jwtService.sign(payload, { expiresIn: '15m' });
+    const accessToken = this.jwtService.sign(payload, { expiresIn: '50m' });
     const refreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
   
     return {

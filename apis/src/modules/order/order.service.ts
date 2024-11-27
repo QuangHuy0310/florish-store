@@ -129,6 +129,8 @@ export class OrderService {
         await this.create(newOrder)
     }
 
+
+
     async addtoList(id: string, productID: any, price: number) {
         const isCheck = await this.orderModel.findById(id)
         console.log(isCheck)
@@ -183,7 +185,7 @@ export class OrderService {
     }
 
     async updateStatus(id: string): Promise<any> {
-        await this.orderModel.findByIdAndUpdate(id,{"status":"pending"})
+        await this.orderModel.findByIdAndUpdate(id, { "status": "pending" })
         return "Success"
     }
 
@@ -222,6 +224,50 @@ export class OrderService {
         );
 
         return order;
+    }
+
+    async removeProductFromCart(user: any, productID: string): Promise<any> {
+        const ID = user.sub;
+    
+        const [order, product] = await Promise.all([
+            this.orderModel.findOne({ userID: ID }),
+            this.getProduct(productID)
+        ]);
+    
+        if (!order) {
+            throw new HttpException('Giỏ hàng không tồn tại', HttpStatus.NOT_FOUND);
+        }
+    
+        if (!product) {
+            throw new HttpException('Sản phẩm không tồn tại', HttpStatus.NOT_FOUND);
+        }
+    
+        if (!Array.isArray(order.productID)) {
+            throw new HttpException('Dữ liệu giỏ hàng không hợp lệ', HttpStatus.BAD_REQUEST);
+        }
+    
+        const initialProductCount = order.productID.length;
+    
+        const filteredProductIDs = order.productID.filter(item => item !== productID);
+    
+        const removedCount = initialProductCount - filteredProductIDs.length;
+        
+        const price = await this.getTotal(removedCount,product)
+        order.total -= price
+        order.productID = filteredProductIDs;
+        await order.save();
+    
+        return { 
+            message: `${removedCount} sản phẩm đã được xóa khỏi giỏ hàng` 
+        };
+    }
+    
+
+    async getTotal(numbers:number,productID:string): Promise<number> {
+        const price = await this.productService.getOne(productID)
+
+        const total = price.price * numbers
+        return total
     }
 
 }
