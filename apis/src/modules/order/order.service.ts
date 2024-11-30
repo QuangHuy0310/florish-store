@@ -96,9 +96,78 @@ export class OrderService {
 
 
 
-    async getOne(id: string): Promise<any> {
-        return this.orderModel.findById(id).where({ deletedAt: null })
+    async getOne(param: string) {
+
+
+        // Xây dựng query cơ bản dựa trên quyền và điều kiện _id === param
+        const matchCondition = {
+            deletedAt: null,
+            _id: param,  // Thêm điều kiện _id === param
+        };
+
+        const order = await this.orderModel.aggregate([
+            { $match: matchCondition },  // Sử dụng match condition đã bao gồm _id === param
+            {
+                $unwind: '$productID',
+            },
+            {
+                $group: {
+                    _id: { orderId: '$_id', productID: '$productID' },
+                    quantity: { $sum: 1 },
+                },
+            },
+            {
+                $lookup: {
+                    from: 'products',
+                    localField: '_id.productID',
+                    foreignField: '_id',
+                    as: 'productDetails',
+                },
+            },
+            {
+                $unwind: '$productDetails',
+            },
+            {
+                $group: {
+                    _id: '$_id.orderId',
+                    products: {
+                        $push: {
+                            product: '$productDetails',
+                            quantity: '$quantity',
+                        },
+                    },
+                    totalQuantity: { $sum: '$quantity' },
+                },
+            },
+            {
+                $lookup: {
+                    from: 'orders',
+                    localField: '_id',
+                    foreignField: '_id',
+                    as: 'orderDetails',
+                },
+            },
+            {
+                $unwind: '$orderDetails',
+            },
+            {
+                $project: {
+                    _id: 1,
+                    userID: '$orderDetails.userID',
+                    total: '$orderDetails.total',
+                    status: '$orderDetails.status',
+                    createdAt: '$orderDetails.createdAt',
+                    updatedAt: '$orderDetails.updatedAt',
+                    address: '$orderDetails.address',
+                    productDetails: '$products',
+                    totalQuantity: 1,
+                },
+            },
+        ]);
+
+        return order[0];  // Trả về một đơn hàng duy nhất, vì bạn chỉ lấy một đơn hàng theo _id
     }
+
 
     async getProduct(id: string): Promise<any> {
         let priceOfProduct = await this.productService.getOne(id)
@@ -196,9 +265,8 @@ export class OrderService {
         )
     }
 
-    async confirmPayment(orderId: string): Promise<any> {
+    async confirmPayment(orderId: string, status:string): Promise<any> {
         const order = await this.orderModel.findById(orderId);
-
         if (!order) {
             throw new HttpException('Order not found', HttpStatus.NOT_FOUND);
         }
@@ -210,7 +278,13 @@ export class OrderService {
             );
         }
 
-        order.status = 'completed';
+        if (status !== 'completed' && status !== 'cancelled') {
+            throw new HttpException('Status not found', HttpStatus.NOT_FOUND);
+
+        }
+
+
+        order.status = status;
         await order.save();
 
         await Promise.all(
@@ -226,44 +300,45 @@ export class OrderService {
         return order;
     }
 
+
     async removeProductFromCart(user: any, productID: string): Promise<any> {
         const ID = user.sub;
-    
+
         const [order, product] = await Promise.all([
             this.orderModel.findOne({ userID: ID }),
             this.getProduct(productID)
         ]);
-    
+
         if (!order) {
             throw new HttpException('Giỏ hàng không tồn tại', HttpStatus.NOT_FOUND);
         }
-    
+
         if (!product) {
             throw new HttpException('Sản phẩm không tồn tại', HttpStatus.NOT_FOUND);
         }
-    
+
         if (!Array.isArray(order.productID)) {
             throw new HttpException('Dữ liệu giỏ hàng không hợp lệ', HttpStatus.BAD_REQUEST);
         }
-    
+
         const initialProductCount = order.productID.length;
-    
+
         const filteredProductIDs = order.productID.filter(item => item !== productID);
-    
+
         const removedCount = initialProductCount - filteredProductIDs.length;
-        
-        const price = await this.getTotal(removedCount,product)
+
+        const price = await this.getTotal(removedCount, product)
         order.total -= price
         order.productID = filteredProductIDs;
         await order.save();
-    
-        return { 
-            message: `${removedCount} sản phẩm đã được xóa khỏi giỏ hàng` 
+
+        return {
+            message: `${removedCount} sản phẩm đã được xóa khỏi giỏ hàng`
         };
     }
-    
 
-    async getTotal(numbers:number,productID:string): Promise<number> {
+
+    async getTotal(numbers: number, productID: string): Promise<number> {
         const price = await this.productService.getOne(productID)
 
         const total = price.price * numbers

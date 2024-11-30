@@ -55,11 +55,11 @@ export class OrderController {
     async deleteNewFeed(@Param('id') id: string) {
         return await this.orderService.softDelete(id)
     }
-
+    @ApiQuery({ name: 'status', required: true, type: String })
     @RequiredByUserRoles(USER_ROLE.ADMIN, USER_ROLE.USER)
     @Post('confirm-payment/:orderId')
-    async updateOrder(@Param('orderId') orderId: string) {
-        const order = await this.orderService.confirmPayment(orderId)
+    async updateOrder(@Param('orderId') orderId: string, @Query('status') status:string) {
+        const order = await this.orderService.confirmPayment(orderId, status)
         return {
             success: true,
             message: "Order confirmed and products updated successfully",
