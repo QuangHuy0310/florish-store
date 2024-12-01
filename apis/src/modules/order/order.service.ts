@@ -303,39 +303,45 @@ export class OrderService {
 
     async removeProductFromCart(user: any, productID: string): Promise<any> {
         const ID = user.sub;
-
-        const [order, product] = await Promise.all([
-            this.orderModel.findOne({ userID: ID }),
-            this.getProduct(productID)
-        ]);
-
+    
+        // Lấy order của user từ cơ sở dữ liệu
+        const order = await this.orderModel.findOne({ userID: ID });
+    
         if (!order) {
             throw new HttpException('Giỏ hàng không tồn tại', HttpStatus.NOT_FOUND);
         }
-
+    
+        // Kiểm tra nếu productID không có trong giỏ hàng
+        if (!order.productID || !order.productID.includes(productID)) {
+            throw new HttpException('Sản phẩm không có trong giỏ hàng', HttpStatus.BAD_REQUEST);
+        }
+    
+        // Lọc sản phẩm cần xóa
+        order.productID = order.productID.filter(item => item !== productID);
+    
+        // Tính lại tổng giá trị giỏ hàng sau khi xóa sản phẩm
+        const product = await this.getProduct(productID);
         if (!product) {
             throw new HttpException('Sản phẩm không tồn tại', HttpStatus.NOT_FOUND);
         }
-
-        if (!Array.isArray(order.productID)) {
-            throw new HttpException('Dữ liệu giỏ hàng không hợp lệ', HttpStatus.BAD_REQUEST);
+    
+        const price = await this.getTotal(order.productID.length, product); // Tính tổng sau khi xóa
+        if (price === undefined || price === null) {
+            throw new HttpException('Không thể tính toán giá trị', HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-        const initialProductCount = order.productID.length;
-
-        const filteredProductIDs = order.productID.filter(item => item !== productID);
-
-        const removedCount = initialProductCount - filteredProductIDs.length;
-
-        const price = await this.getTotal(removedCount, product)
-        order.total -= price
-        order.productID = filteredProductIDs;
+    
+        // Cập nhật tổng giá trị giỏ hàng
+        order.total -= price;
+    
+        // Lưu lại giỏ hàng sau khi thay đổi
         await order.save();
-
+    
+        // Trả về thông báo
         return {
-            message: `${removedCount} sản phẩm đã được xóa khỏi giỏ hàng`
+            message: 'Sản phẩm đã được xóa khỏi giỏ hàng'
         };
     }
+    
 
 
     async getTotal(numbers: number, productID: string): Promise<number> {
