@@ -73,16 +73,15 @@ export class AuthService {
 
   async login(input: LoginDto) {
     const user = await this.userService.findByEmail(input.email);
-    console.log(user);
     if (!user) {
       throw new HttpException('Login failed', HttpStatus.UNAUTHORIZED);
     }
-    console.log(user);
     if (!(await this.comparePasswords(input.password, user.hash))) {
       throw new HttpException('Login failed', HttpStatus.UNAUTHORIZED);
     }
+    console.log(user)
   
-    const payload = { email: user.email, sub: user.id, role: user.role };
+    const payload = { email: user.email, sub: user.id, role: user.role, address:user.address, phone: user.phone};
     const accessToken = this.jwtService.sign(payload, { expiresIn: '50m' });
     const refreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
   

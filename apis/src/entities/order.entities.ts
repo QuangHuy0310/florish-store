@@ -26,6 +26,11 @@ export class Order extends BaseEntity{
   address: string;
 
   @Prop({
+    type: String,
+  })
+  phone: string;
+
+  @Prop({
     type: Number,
   })
   total: number;

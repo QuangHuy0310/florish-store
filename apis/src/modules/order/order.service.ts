@@ -93,12 +93,7 @@ export class OrderService {
         return orders;
     }
 
-
-
-
     async getOne(param: string) {
-
-
         // Xây dựng query cơ bản dựa trên quyền và điều kiện _id === param
         const matchCondition = {
             deletedAt: null,
@@ -186,6 +181,9 @@ export class OrderService {
             this.getProduct(productID)
         ])
         const price: number = product.price
+        const address: string = product.address
+        const phone: string = product.phone
+
         if (isCheck) {
             return await this.addtoList(isCheck.id, productID, price)
         }
@@ -193,7 +191,9 @@ export class OrderService {
             userID: ID,
             productID: [productID],
             status: null,
-            total: price
+            total: price,
+            address: address,
+            phone: phone
         }
         await this.create(newOrder)
     }
