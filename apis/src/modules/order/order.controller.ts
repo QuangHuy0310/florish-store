@@ -14,7 +14,15 @@ export class OrderController {
     @RequiredByUserRoles(USER_ROLE.ADMIN, USER_ROLE.USER)
     @Get()
     async get(@Request() { user }: AuthorizationRequest) {
+        console.log(user)
         return await this.orderService.getAll(user)
+    }
+
+    @RequiredByUserRoles(USER_ROLE.USER)
+    @Get('history')
+    async getHistory(@Request() { user }: AuthorizationRequest) {
+        console.log(user)
+        return await this.orderService.getHistory(user)
     }
 
     @RequiredByUserRoles(USER_ROLE.ADMIN, USER_ROLE.USER)
@@ -42,7 +50,6 @@ export class OrderController {
     @Delete('/dele-from-cart-ALL')
     async removeAll(@Request() { user }: AuthorizationRequest, @Query('productID') productID: string) {
         return await this.orderService.removeProductFromCart(user, productID)
-        // return user
     }
 
     @RequiredByUserRoles(USER_ROLE.ADMIN)
