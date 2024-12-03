@@ -20,12 +20,19 @@ export class OrderService {
         const getID = user.sub;
         const getRole = user.role;
 
-        // Xây dựng query cơ bản dựa trên quyền
-        const matchCondition = {
-            deletedAt: null,
-            status:null,
-            ...(getRole === 'user' ? { userID: getID } : {}),
-        };
+        let matchCondition 
+        if (getRole === 'user') {
+            matchCondition = {
+                deletedAt: null,
+                status: null,
+                ...(getRole === 'user' ? { userID: getID } : {}),
+            };
+        }
+        else{
+            matchCondition = {
+                deletedAt: null,
+            };
+        }
 
         const orders = await this.orderModel.aggregate([
             { $match: matchCondition },
@@ -95,9 +102,9 @@ export class OrderService {
         return orders;
     }
 
-    async getHistory(user : any){
+    async getHistory(user: any) {
         const id = user.sub
-        return await this.orderModel.find({userID: id, deletedAt: null})
+        return await this.orderModel.find({ userID: id, deletedAt: null })
     }
 
     async getOne(param: string) {
