@@ -284,35 +284,36 @@ export class OrderService {
         if (!order) {
             throw new HttpException('Order not found', HttpStatus.NOT_FOUND);
         }
-
+    
         if (order.status !== 'pending') {
             throw new HttpException(
                 `Order status must be 'pending' to confirm payment`,
                 HttpStatus.BAD_REQUEST
             );
         }
-
+    
         if (status !== 'completed' && status !== 'cancelled') {
-            throw new HttpException('Status not found', HttpStatus.NOT_FOUND);
-
+            throw new HttpException('Status not valid', HttpStatus.BAD_REQUEST);
         }
-
-
+    
         order.status = status;
         await order.save();
-
-        await Promise.all(
-            order.productID.map(async (productId) => {
-                const product = await this.productService.getOne(productId);
-                if (product) {
-                    product.hot = (product.hot || 0) + 1;
-                    await product.save();
-                }
-            })
-        );
-
+    
+        if (status === 'completed') {
+            await Promise.all(
+                order.productID.map(async (productId) => {
+                    const product = await this.productService.getOne(productId);
+                    if (product) {
+                        product.hot = (product.hot || 0) + 1;
+                        await product.save();
+                    }
+                })
+            );
+        }
+    
         return order;
     }
+    
 
 
     async removeProductFromCart(user: any, productID: string): Promise<any> {
