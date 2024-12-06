@@ -25,7 +25,7 @@ export class ProductService {
         const skip = (page - 1) * limit;
     
         const query: any = { deletedAt: null };
-        const sortOrder: any = { createdAt: -1 };
+        const sortOrder: any = { hot: -1 };
     
         if (payload?.name?.trim()) {
             query.name = { $regex: payload.name.trim(), $options: 'i' };
