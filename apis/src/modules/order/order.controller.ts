@@ -2,7 +2,7 @@ import { OrderService } from '@modules/index-service';
 import { Body, Controller, Delete, Get, Param, Post, Put, Query, Request } from '@nestjs/common';
 import { USER_ROLE } from '@utils/data-types/enums';
 import { RequiredByUserRoles } from '@utils/decorator';
-import { AddressDTO, orderDTO } from './dto/order.dto';
+import { InforDTO, orderDTO } from './dto/order.dto';
 import { AuthorizationRequest } from '@utils/data-types/types';
 import { ApiQuery, ApiTags } from '@nestjs/swagger';
 
@@ -76,9 +76,9 @@ export class OrderController {
     }
 
     @RequiredByUserRoles(USER_ROLE.USER)
-    @Put('address/:id')
-    async updateAddress(@Param('id') id: string, @Body() payload: AddressDTO, @Request() { user }: AuthorizationRequest) {
-        return await this.orderService.updateAddress(id, payload, user)
+    @Put('infor/:id')
+    async updateAddress(@Param('id') id: string, @Body() payload: InforDTO, @Request() { user }: AuthorizationRequest) {
+        return await this.orderService.updateInfor(id, payload, user)
     }
 
     @RequiredByUserRoles(USER_ROLE.USER)

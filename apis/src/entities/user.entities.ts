@@ -31,6 +31,11 @@ export class User extends BaseEntity {
 
   @Prop({
     type: String,
+  })
+  name: string;
+
+  @Prop({
+    type: String,
     enum: USER_ROLE,
   })
   role: USER_ROLE;

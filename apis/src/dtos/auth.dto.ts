@@ -43,6 +43,12 @@ export class RegisterDto {
   address: string;
 
   @ApiPropertyOptional({
+    example: 'Duong',
+  })
+  @IsOptional()
+  name: string;
+
+  @ApiPropertyOptional({
     example: '+84975824232',
   })
   @IsOptional()

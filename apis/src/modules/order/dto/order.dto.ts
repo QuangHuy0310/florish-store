@@ -36,6 +36,14 @@ export class orderDTO {
   address: string;
 
   @ApiProperty({
+    example: 'Dương',
+    description: 'Tên người gửi',
+  })
+  @IsString()
+  @IsNotEmpty()
+  sender: string;
+
+  @ApiProperty({
     example: 169,
     description: 'Tổng tiền của đơn hàng',
   })
@@ -44,11 +52,11 @@ export class orderDTO {
 }
 
 export class orderStatusDTO {
-    @ApiPropertyOptional({
-      example: 'status',
-    })
-    @IsString()
-    status: string;
+  @ApiPropertyOptional({
+    example: 'status',
+  })
+  @IsString()
+  status: string;
 }
 
 export class AddProductToCartDTO {
@@ -70,11 +78,23 @@ export class AddProductToCartDTO {
 }
 
 
-export class AddressDTO {
+export class InforDTO {
   @ApiProperty({
     example: '1/1/ PVD',
   })
   @IsString()
   address: string;
+
+  @ApiProperty({
+    example: '1/1/ PVD',
+  })
+  @IsString()
+  phone: string;
+
+  @ApiProperty({
+    example: '1/1/ PVD',
+  })
+  @IsString()
+  recipientName: string;
 
 }

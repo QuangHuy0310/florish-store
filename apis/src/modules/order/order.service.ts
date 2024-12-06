@@ -191,6 +191,7 @@ export class OrderService {
     async addToCart(user: any, productID: any): Promise<any> {
         console.log(user)
         const ID = user.sub;
+        const name:string = user.name
 
         const [isCheck, product] = await Promise.all([
             this.orderModel.findOne({ userID: ID, status: null, deletedAt: null }),
@@ -209,7 +210,8 @@ export class OrderService {
             status: null,
             total: price,
             address: user.address,
-            phone: user.phone
+            phone: user.phone,
+            sender:name
         }
         await this.create(newOrder)
     }
@@ -257,7 +259,7 @@ export class OrderService {
         await this.orderModel.findByIdAndUpdate(id, payload)
         return "Success"
     }
-    async updateAddress(id: string, payload: any, userID: any): Promise<any> {
+    async updateInfor(id: string, payload: any, userID: any): Promise<any> {
         const getID = userID.sub
         const isCheck = await this.orderModel.findById(id)
         if (!isCheck || isCheck.userID !== getID) {
